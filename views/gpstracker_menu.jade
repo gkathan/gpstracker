@@ -1,0 +1,46 @@
+extends layout
+
+block content
+	div.row(style="margin-left:10px;margin-bottom:10px;margin-top:10px")
+		img(src='/images/kathan.png'  height='50px')
+		if session.AUTH
+			span(style="font-size:10px;margin-left:20px;color:grey")  logged in as: <b> #{session.AUTH} </b> 
+			
+		.div(class='notifications top-left')
+
+	div.navbar.navbar-default
+		.navbar-header
+			button.navbar-toggle(type='button', data-toggle='collapse', data-target='.navbar-collapse')
+				span.icon-bar
+				span.icon-bar
+				span.icon-bar
+			a.navbar-brand(href='/') realtime <b>gps</b>²<b>tracker
+		.collapse.navbar-collapse
+			ul.nav.navbar-nav
+				
+				if !session.AUTH
+					li.active
+						a(href='/login') login
+				if session.AUTH
+					li.active
+						a(href='/logout') logout
+					
+					ul.nav.navbar-nav
+						li.dropdown(id="fat-menu")
+							a.dropdown-toggle(id="targets" href="#" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false") tracker
+								span.caret 
+
+							ul.dropdown-menu(role="menu" aria-labelledby="admin")
+								li(role="presentation") 
+									a(role="menuitem" tabindex="-1" href="/customers") customers
+								li(role="presentation") 
+									a(role="menuitem" tabindex="-1" href="/competitors") competitors
+								li(role="presentation") 
+									a(role="menuitem" tabindex="-1" href="/labels") labels
+								li
+									a(href='/playbooks') playbooks
+
+				
+							
+						
+	include includes/material

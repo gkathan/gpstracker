@@ -1,0 +1,33 @@
+{
+  "name": "gpstracker",
+  "version": "0.1.0",
+  "dependencies": {
+    "jquery": "latest",
+    "bootstrap": "~3.3.2",
+    "bootstrap-multiselect": "~0.9.10",
+    "bootstrap-notify": "latest",
+    "d3": "latest",
+    "underscore": "latest",
+    "underscore.nest": "latest",
+    "moment": "latest",
+    "daterangepicker": "latest",
+  
+    "flippant.js": "latest",
+    "datejs": "latest",
+    "font-awesome": "latest",
+    "eonasdan-bootstrap-datetimepicker": "~4.0.0",
+    "slickgrid": "latest",
+    "lodash": "latest",
+    "bootstrap-material-design": "~0.2.2"
+  },
+  "authors": [
+    "cactus <gerold.kathan@gmail.com>"
+  ],
+  "description": "gps tracker tk5000",
+  "license": "MIT",
+  "private": true,
+  "resolutions": {
+    "bootstrap-multiselect": "~0.9.10",
+    "jquery": "1.11.1"
+  }
+}
