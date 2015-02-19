@@ -119,7 +119,7 @@ app.use(function(err, req, res, next) {
 
 //  1000000001,20150215123432,16.369861,48.187290,0,190,228,5,2
 //var http = require('http').Server(app);
-var socketserver = app.listen(55555);
+var socketserver = app.listen(4444);
 
 
 var mongojs = require("mongojs");
