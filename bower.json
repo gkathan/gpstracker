@@ -28,6 +28,6 @@
   "private": true,
   "resolutions": {
     "bootstrap-multiselect": "~0.9.10",
-    "jquery": "1.11.1"
+    "jquery": "~2.1.1"
   }
 }

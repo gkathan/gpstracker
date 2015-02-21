@@ -23,7 +23,7 @@ block content
 			div(id="log")
 
 			script.
-				var socket = io.connect('ws://localhost:5005');
+				var socket = io.connect('ws://#{ip}:#{wsPort}');
 
 				socket.on('gpslog', function(log){
 					console.log(log);

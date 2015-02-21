@@ -19,12 +19,17 @@ var app = express();
 
 
 
-
+/*
 var http = app.listen(5005, function() {
     console.log("server started on port 5005");
 });
 
+
 var io = require('socket.io').listen(http);
+*/
+
+var socketserver = app.listen(config.wsPort);
+var io = require('socket.io').listen(socketserver);
 
 
 
@@ -114,15 +119,6 @@ app.use(function(err, req, res, next) {
         message: err.message,
 
 
-
-
-
-
-
-
-
-
-
         error: {}
     });
 });
@@ -132,27 +128,23 @@ app.use(function(err, req, res, next) {
 
 //  1000000001,20150215123432,16.369861,48.187290,0,190,228,5,2
 //var http = require('http').Server(app);
-var socketserver = app.listen(4444);
+//var socketserver = app.listen(4444);
 
 
 var mongojs = require("mongojs");
 
 
-var PORT = 5032;
+var PORT = config.gpsUdpPort;
 
-var HOST = '127.0.0.1';
+var HOST = config.serverIP;
 //var HOST = '213.208.138.106';
 
 var dgram = require('dgram');
 var server = dgram.createSocket('udp4');
 
 
-//server.bind(PORT,HOST);
-
-var DB="tracker";
-
-var connection_string = '127.0.0.1:27017/'+DB;
-var db = mongojs(connection_string, [DB]);
+var connection_string = config.database.host+config.database.db;
+var db = mongojs(connection_string, [config.database.db]);
 
 
 

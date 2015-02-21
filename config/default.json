@@ -9,36 +9,26 @@
 
     "locale": "en",
     
-    "version" : "2.0.0 alpha",
+    "version" : "0.1.0 alpha",
     
     "build" : "---should be dynamically assigned",
-
-    "v1" : {
-		
-		"url" : "http://v1.bwinparty.corp/V1-Production/",
-		
-		"proxy" : "http://knbnprxy.ea.bwinparty.corp/rest/epics",
-		
-		"syncEpics": {
-			"mode": "off",
-			"intervalMinutes" :0,
-			"url" : "localhost/v1sync"
-			}
-	},
+	
+	"serverIP" : "localhost",
+	
+	"gpsUdpPort" : "5032",
+	
+	"wsPort" : "5006",
 
     "database": {
         "type" : "mongo",
-        "db": "kanbanv2",
+        "db": "tracker",
         "host" : "localhost:27017"
      },
      
      "api" : {
-		"url" :"/api/kanbanv2/rest/"
+		"url" :"/api/gpstracker/rest/"
 	},
 	
-	"transcoder" : {
-		"url" : ""
-     },
      
      "mailer" : {
 		"host": "localhost",
