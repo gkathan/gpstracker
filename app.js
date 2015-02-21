@@ -17,6 +17,19 @@ var config = require('config');
 
 var app = express();
 
+
+
+
+var http = app.listen(5005, function() {
+    console.log("server started on port 5005");
+});
+
+var io = require('socket.io').listen(http);
+
+
+
+
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -141,29 +154,6 @@ var DB="tracker";
 var connection_string = '127.0.0.1:27017/'+DB;
 var db = mongojs(connection_string, [DB]);
 
-
-var io = require('socket.io').listen(socketserver);
-
-
-	//io.set('transports',['websocket']);
-	
-
-
-/*http.listen(3000, function(){
-  console.log('Websocket server listening on *:3000');
-});
-*/
-
-/*
-io.sockets.on('connection', function (socket) {
-  socket.emit('news', { hello: 'world' });
-  socket.on('my other event', function (data) {
-    console.log(data);
-  });
-});
-
-
-*/
 
 
 server.on('listening', function () {
