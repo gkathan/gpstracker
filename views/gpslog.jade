@@ -1,61 +1,101 @@
 include gpstracker_menu
-
-
+script(src="/javascripts/gpstracker/gpslog_client.js")
 
 
 
 block content
 
-	div(id="map-canvas" style="width:1400px;margin:auto; height:400px")
+	div.panel(style=" position: relative;padding: 20px 40px 40px;display: block;background-color:white;;width:400px;text-align: center;margin: 10px auto;")
+		div.form-group
+			div.input-group.date(id="fromdate" )
+				label from:
+				input.form-control(id="from" type="text" style="width:200px")
+				span.input-group-addon 
+					span.glyphicon.glyphicon-calendar
+
+			div.input-group.date(id="todate" )
+				label to: 
+				input.form-control(id="to" type="text" style="width:200px")
+				span.input-group-addon 
+					span.glyphicon.glyphicon-calendar
+			button.btn.btn-primary.btn-xs(onClick="alert('to: '+$('#to').val())") Search
+
+	div(id="map-canvas" style="width:1200px;margin:auto; height:300px")
 	
-	div.panel(style=" position: relative;padding: 20px 40px 40px;display: block;background-color:white;;width:1400px;text-align: center;margin: 10px auto;")
+	div.panel(style=" position: relative;padding: 20px 40px 40px;display: block;background-color:white;;width:1200px;text-align: center;margin: 10px auto;")
 		.panel-heading
 			h3.panel-title GPSLOG
 		.panel-body
-		table.table.table-striped.table-hover.table-condensed
-			thead
-				tr
-					//th _id 
-					th deviceID
-					th dateTime
-					th longitude
-					th latitude
-					th speed
-					th heading
-					th altitude
-					th satellite
-					th eventID
-			tbody
-				each g in gpslog
+		
+		
+			
+	
+			table.table.table-striped.table-hover.table-condensed
+				thead
 					tr
-					//td(style="text-align:left;vertical-align:middle") #{g._id} 
-					td(style="text-align:left;vertical-align:middle") #{g.deviceID} 
-					td(style="text-align:left;vertical-align:middle") 
-						a(href="http://maps.google.com/maps?q=#{g.latitude},#{g.longitude}" target="_new")
-							| #{g.dateTime} 
-					td(style="text-align:left;vertical-align:middle") #{g.longitude} 
-					td(style="text-align:left;vertical-align:middle") #{g.latitude} 
-					td(style="text-align:left;vertical-align:middle") #{g.speed} 
-					td(style="text-align:left;vertical-align:middle") #{g.heading} 
-					td(style="text-align:left;vertical-align:middle") #{g.altitude} 
-					td(style="text-align:left;vertical-align:middle") #{g.satellite} 
-					td(style="text-align:left;vertical-align:middle") #{g.eventID} 
+						//th _id 
+						//th deviceID
+						th(style="width:200px") dateTime
+						th(style="width:100px") longitude
+						th(style="width:100px") latitude
+						th(style="width:100px") speed
+						th(style="width:100px") heading
+						th(style="width:100px") altitude
+						th satellite
+						th eventID
+				tbody
+					each g in gpslog
+						tr
+						//td(style="text-align:left;vertical-align:middle") #{g._id} 
+						//td(style="text-align:left;vertical-align:middle") #{g.deviceID} 
+						td(style="text-align:left;vertical-align:middle") 
+							a(href="http://maps.google.com/maps?q=#{g.latitude},#{g.longitude}" target="_new")=moment(g.dateTime).format("YYYY-MM-DD HH:mm:ss")
+						td(style="text-align:left;vertical-align:middle") #{g.longitude} 
+						td(style="text-align:left;vertical-align:middle") #{g.latitude} 
+						td(style="text-align:left;vertical-align:middle") #{g.speed} km/h
+						td(style="text-align:left;vertical-align:middle") #{g.heading}°
+						td(style="text-align:left;vertical-align:middle") #{g.altitude}m
+						td(style="text-align:left;vertical-align:middle") #{g.satellite} 
+						td(style="text-align:left;vertical-align:middle") #{g.eventID} 
+						
+
 
 script.
 	
-	var marker = new google.maps.Marker({
-		position: new google.maps.LatLng(48.192, 16.369),
-		map: map,
-		title: 'Hello World!'
+	
+	 $(function () {
+		$('#fromdate').datetimepicker();
+		$('#todate').datetimepicker();
 	});
 	
+	var map;
 	
+	
+	
+
+	/*
+	
+	//console.log("#{gpslogjson}");
+	var log = JSON.parse(("#{gpslogjson}").replace(/&quot;/g,'"'));
+	
+	console.log("length of gpslog: "+log.length);
+	
+	for (g in log){
+		
+		var _g = log[g];
+		var marker = new google.maps.Marker({
+			position: new google.maps.LatLng(_g.latitude, _g.longitude),
+			map: map,
+			title: 'Holla'
+		});
+		console.log("...trying to set marker: "+marker.position+" for map: "+map);
+	}
+	*/
+	
+	/*
 	var logCoordinates = [new google.maps.LatLng(48.192, 16.369),new google.maps.LatLng(48.182, 16.339),new google.maps.LatLng(48.092, 16.069),new google.maps.LatLng(48.192, 16.369)];
 
-	/*for (g in logCoordinates){
-		logCoordinates.push(new google.maps.LatLng(gpslog[g].latitude, gpslog[g].longitude));
-	}*/
-
+	
 	var logPath = new google.maps.Polyline({
 		path: logCoordinates,
 		geodesic: true,
@@ -65,3 +105,4 @@ script.
 		});
 
 	logPath.setMap(map);
+	*/

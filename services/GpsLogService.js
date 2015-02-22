@@ -15,7 +15,7 @@ var db = mongojs(connection_string, [DB]);
 /**
  * find all GpsLogs
  */
-exports.findGpsLogs = function(callback) {
+exports.findLog = function(callback) {
 	var gpslogs =  db.collection('gpslogs');
 		gpslogs.find({}, function (err, docs){
 			//sort
@@ -24,6 +24,22 @@ exports.findGpsLogs = function(callback) {
 			return;
 	});
 }
+
+exports.findLogByRange = function(from,to,callback) {
+	var gpslogs =  db.collection('gpslogs');
+		gpslogs.find({dateTime:{
+			 $gt:from,
+			 $lt:to
+			 
+			 }
+			 }, function (err, docs){
+			//sort
+			//var _e =_.sortBy(docs[0].gpslogs, "dateTime")
+			callback("test","hello world!");
+			return;
+	});
+}
+
 
 
 /**
@@ -35,6 +51,6 @@ exports.findLatest = function(callback) {
 			var _e =docs[0].gpslogs;
 			
 			}
-	});
+	);
 	return;
 }

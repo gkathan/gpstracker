@@ -143,9 +143,9 @@ var dgram = require('dgram');
 var server = dgram.createSocket('udp4');
 
 
-var connection_string = config.database.host+config.database.db;
+var connection_string = config.database.host+'/'+config.database.db;
 var db = mongojs(connection_string, [config.database.db]);
-
+var moment = require('moment');
 
 
 server.on('listening', function () {
@@ -166,14 +166,14 @@ server.on('message', function (message, remote) {
       
     var _data = {};
     _data.deviceID = _rawArray[0];
-    _data.dateTime = _rawArray[1];
+    _data.dateTime = moment(_rawArray[1],"YYYYMMDDHHmmssSS").toDate();
     _data.longitude = _rawArray[2];
     _data.latitude = _rawArray[3];
-    _data.speed = _rawArray[4];
-    _data.heading = _rawArray[5];
-    _data.altitude = _rawArray[6];
-    _data.satellite = _rawArray[7];
-    _data.eventID = _rawArray[8];
+    _data.speed = parseInt(_rawArray[4]);
+    _data.heading = parseInt(_rawArray[5]);
+    _data.altitude = parseInt(_rawArray[6]);
+    _data.satellite = parseInt(_rawArray[7]);
+    _data.eventID = parseInt(_rawArray[8]);
     
     
     
@@ -181,9 +181,10 @@ server.on('message', function (message, remote) {
     if (_data.deviceID=="1000000001")
     {
 		console.log("[OK] got valid gps packet: "+JSON.stringify(_data));
+		console.log("...going to insert..."+connection_string);
 		db.collection("gpslog").insert(_data, function(err , success){
-								console.log('Response success '+success);
-								console.log('Response error '+err);
+			console.log('Response success '+success);
+			console.log('Response error '+err);
 		});
 		
 		io.sockets.emit('gpslog',_data);

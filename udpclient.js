@@ -1,6 +1,6 @@
 var dgram = require('dgram');
 
-var message = new Buffer("1000000001,20150221072300,16.369861,48.187290,0,190,228,5,2");
+var message = new Buffer("1000000001,20150222131200,16.372961,48.181290,0,190,228,5,2");
 var client = dgram.createSocket("udp4");
 
 var port = 5032;
