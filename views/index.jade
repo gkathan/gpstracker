@@ -14,22 +14,6 @@ block content
 					button.btn.btn-primary.btn-xs(onClick="window.location.href='/gpslog'") Log
 				br
 				span(style="color:grey;font-size:10px") cactus | <b>interactive stuff</b> | gpstrackerv0.1 - alpha version 
-
-	
-	
-	
-			p receiving from TK5000:  #{title}
-			span gps log:
-			div(id="log")
-
-			script.
-				var socket = io.connect('ws://#{ip}:#{wsPort}');
-
-				socket.on('gpslog', function(log){
-					console.log(log);
-					document.getElementById("log").innerHTML += "<br>"+JSON.stringify(log);
-				});
-
 	
 	include includes/material
 

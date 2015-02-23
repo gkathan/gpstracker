@@ -19,22 +19,6 @@ var app = express();
 
 
 
-/*
-var http = app.listen(5005, function() {
-    console.log("server started on port 5005");
-});
-
-
-var io = require('socket.io').listen(http);
-*/
-
-var socketserver = app.listen(config.wsPort);
-var io = require('socket.io').listen(socketserver);
-
-
-
-
-
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -44,10 +28,8 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
 
 app.use(session({
   secret: 'keyboard cat',
@@ -55,13 +37,11 @@ app.use(session({
   saveUninitialized: true
 }))
 
-
 // http://thenitai.com/2013/11/25/how-to-access-sessions-in-jade-template/
 app.use(function(req,res,next){
 	res.locals.session = req.session;
 	next();
 });
-
 
 // get access to URL of running app
 app.use(function(req, res, next) {
@@ -70,19 +50,14 @@ app.use(function(req, res, next) {
     }
     return next();
   });
-  
-
 
 // adds config object to all responses
 var addconfig = require('./services/middleware/addconfig.js');
 app.use(addconfig());
 
-
-
 app.use('/', routes);
 app.use('/gpslog', gpslog);
 app.use('/api', api);
-
 
 
 // adds config object to all responses
@@ -124,86 +99,8 @@ app.use(function(err, req, res, next) {
 });
 
 
-
-
-//  1000000001,20150215123432,16.369861,48.187290,0,190,228,5,2
-//var http = require('http').Server(app);
-//var socketserver = app.listen(4444);
-
-
-var mongojs = require("mongojs");
-
-
-var PORT = config.gpsUdpPort;
-
-var HOST = config.serverIP;
-//var HOST = '213.208.138.106';
-
-var dgram = require('dgram');
-var server = dgram.createSocket('udp4');
-
-
-var connection_string = config.database.host+'/'+config.database.db;
-var db = mongojs(connection_string, [config.database.db]);
-var moment = require('moment');
-
-
-server.on('listening', function () {
-    var address = server.address();
-    console.log('UDP Server listening on ' + address.address + ":" + address.port);
-});
-
-server.on('message', function (message, remote) {
-    console.log(remote.address + ':' + remote.port +' - ' + message);
-    
-    // message is a nodejs Buffer http://nodejs.org/api/buffer.html
-    var _raw = message.toString('ascii');
-    
-    console.log("--- _raw = "+_raw);
-    
-    var _rawArray = _raw.split(",");
-  
-      
-    var _data = {};
-    _data.deviceID = _rawArray[0];
-    _data.dateTime = moment(_rawArray[1],"YYYYMMDDHHmmssSS").toDate();
-    _data.longitude = _rawArray[2];
-    _data.latitude = _rawArray[3];
-    _data.speed = parseInt(_rawArray[4]);
-    _data.heading = parseInt(_rawArray[5]);
-    _data.altitude = parseInt(_rawArray[6]);
-    _data.satellite = parseInt(_rawArray[7]);
-    _data.eventID = parseInt(_rawArray[8]);
-    
-    
-    
-    
-    if (_data.deviceID=="1000000001")
-    {
-		console.log("[OK] got valid gps packet: "+JSON.stringify(_data));
-		console.log("...going to insert..."+connection_string);
-		db.collection("gpslog").insert(_data, function(err , success){
-			console.log('Response success '+success);
-			console.log('Response error '+err);
-		});
-		
-		io.sockets.emit('gpslog',_data);
-	}
-
-
-});
-
-server.bind(PORT, HOST);
-
-
-
-
-
-
-
-
-
-
+var udpServer = require('./services/GpsUDPServer');
+udpServer.start();
 
 
 module.exports = app;

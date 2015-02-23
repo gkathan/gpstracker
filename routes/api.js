@@ -51,14 +51,17 @@ function findAllByName(req, res , next){
 	
 	var _f = {};
 	if (_filterName){
-		var _params = _filterParams.split(";");
-		var _from = new Date(_params[0]);
-		var _to = new Date(_params[1]);
 		
-		console.log("------------------- filtername: "+_filterName);
-		console.log("------------------- filterOperator: "+_filterOperator);
-		console.log("------------------- from: "+_from);
-		console.log("------------------- to: "+_to);
+		if (_filterParams){
+			var _params = _filterParams.split(";");
+			var _from = new Date(_params[0]);
+			var _to = new Date(_params[1]);
+			
+			console.log("------------------- filtername: "+_filterName);
+			console.log("------------------- filterOperator: "+_filterOperator);
+			console.log("------------------- from: "+_from);
+			console.log("------------------- to: "+_to);
+		}
 		
 		if (_filterOperator=="range"){
 			// lets construct some query 
@@ -71,22 +74,41 @@ function findAllByName(req, res , next){
 			_f[_filterName]["$lt"]=_to;
 			
 			console.log("_f: "+JSON.stringify(_f));
+			
+			db.collection(collection).find(_f).sort({dateTime : -1} , function(err , success){
+				if(success){
+					console.log("******************* success: "+success);
+					
+					res.send(success);
+					return ;//next();
+				}else{
+					return next(err);
+				}
+			});
+		}
+		else if (_filterOperator=="latest"){
+			//_f[_filterName]={};
+			
+			//console.log("_f: "+JSON.stringify(_f));
+			db.collection(collection).findOne({}, {sort:{$natural:-1}}, function(err , success){
+				if(success){
+					console.log("******************* success: "+success);
+					
+					res.send(success);
+					return ;//next();
+				}else{
+					return next(err);
+				}
+			});
+
+
 		}
 		
 		// e.g http://localhost:5005/api/tracker/rest/gpslog?n=dateTime&o=range&p=2015-01-01 09:10;2015-02-02 10:10
 		
 	}
 	
-    db.collection(collection).find(_f).sort({dateTime : -1} , function(err , success){
-        if(success){
-            console.log("******************* success: "+success);
-            
-            res.send(success);
-            return ;//next();
-        }else{
-            return next(err);
-        }
-    });
+    
 }
 
 

@@ -2,26 +2,26 @@ include gpstracker_menu
 //script(src="/javascripts/gpstracker/gpslog_client.js")
 
 block content
-	div.panel(style=" position: relative;padding: 20px 40px 40px;display: block;background-color:white;;width:400px;text-align: center;margin: 10px auto;")
+	div.panel(style=" position: relative;padding: 20px 40px 10px;display: block;background-color:white;;width:700px;text-align: center;margin: 10px auto;")
 		div.form-group
 			div.input-group.date(id="fromdate" )
-				label from:
 				input.form-control(id="from" type="text" style="width:200px")
 				span.input-group-addon 
-					span.glyphicon.glyphicon-calendar
+					span.glyphicon.glyphicon-calendar 
+					span(style="font-size:10px") ::from date
+						
 
 			div.input-group.date(id="todate" )
-				label to: 
 				input.form-control(id="to" type="text" style="width:200px")
 				span.input-group-addon 
-					span.glyphicon.glyphicon-calendar
-			button.btn.btn-primary.btn-xs(id="submitsearch" ) Search
-		
-			
+					span.glyphicon.glyphicon-calendar 
+					span(style="font-size:10px")  ::to date
+			button.btn.btn-primary.btn-xs(id="submitsearch" ) Search 
+			button.btn.btn-info.btn-xs(id="submitlatest" ) Latest Position
 
-	div(id="map-canvas" style="width:1200px;margin:auto; height:300px")
+	div(id="map-canvas" style="width:700px;margin:auto; height:300px")
 	
-	div.panel(style=" position: relative;padding: 20px 40px 40px;display: block;background-color:white;;width:1200px;text-align: center;margin: 10px auto;")
+	div.panel(style=" position: relative;padding: 20px 40px 40px;display: block;background-color:white;;width:700px;text-align: center;margin: 10px auto;")
 		.panel-heading
 			h3.panel-title GPSLOG
 		.panel-body
@@ -29,15 +29,15 @@ block content
 		
 			
 	
-			table.table.table-striped.table-hover.table-condensed(id="gpslogTable")
+			table.table.table-striped.table-hover.table-condensed(id="gpslogTable" style="font-size:10px")
 				thead
 					tr
-						th(style="width:200px") dateTime
-						th(style="width:100px") longitude
-						th(style="width:100px") latitude
-						th(style="width:100px") speed
-						th(style="width:100px") heading
-						th(style="width:100px") altitude
+						th(style="width:130px") dateTime
+						th(style="width:70px") longitude
+						th(style="width:70px") latitude
+						th(style="width:70px") speed
+						th(style="width:70px") heading
+						th(style="width:70px") altitude
 						th satellite
 						th eventID
 				tbody
@@ -45,21 +45,121 @@ block content
 
 script.
 	
+	 $(function () {
+		$('#fromdate').datetimepicker({keepOpen:false,format:"ddd, DD MMM YYYY, hh:mm:ss"});
+		$('#todate').datetimepicker({keepOpen:false,format:"ddd, DD MMM YYYY, hh:mm:ss"});
+		$('#submitsearch').click(function(){
+			var _from = $('#from').val();
+			var _to = $('#to').val();
+			loadGpsLog(_from,_to);
+		});
+		// default to date is now()
+		$('#to').val(moment(new Date()).format("ddd, DD MMM YYYY, hh:mm:ss"));
+		
+		$('#submitlatest').click(function(){
+			_cleanLogsAndMarkers()
+			loadGpsLatest();
+			
+		});
+	});
+
+
+	var markers;
+	
+	var realtimeMarkers=[];
+	var logPath;
+
+	google.maps.event.addDomListener(window, 'load', initialize);
+	
+	function initialize() {
+		var mapOptions = {
+				zoom: 16
+		};
+		map = new google.maps.Map(document.getElementById('map-canvas'),mapOptions);
+		loadGpsLatest();
+	}
+	
+	// websocket handling
+	var socket = io.connect('ws://#{ip}:#{wsPort}');
+
+	socket.on('gpslog', function(log){
+		console.log(log);
+		//document.getElementById("log").innerHTML += "<br>"+JSON.stringify(log);
+		_addRealtimeGpsLog(log);
+	});
+	
+	
+		//realtime logger
+	function _addRealtimeGpsLog(g){
+		_appendRow(g);
+		// re-color the old realtime markers
+		for (var m in realtimeMarkers){
+			console.log("....trying to set green marker for marker: "+realtimeMarkers[m]);
+			realtimeMarkers[m].setIcon('http://maps.google.com/mapfiles/ms/micons/green.png')
+		}
+		// only the latest is yellow !
+		var marker = _appendMarker(g,"yellow");
+		realtimeMarkers.push(marker);
+		console.log("pushed marker: "+marker+" into realtimeMarkers array: length: "+realtimeMarkers.length);
+		
+		// center around latest marker
+		map.setCenter(marker.getPosition());
+	}
+
+
+
+	
 	function loadGpsLog(from,to){
+		var bounds = new google.maps.LatLngBounds();
 		
 		$.getJSON( "/api/tracker/rest/gpslog?n=dateTime&o=range&p="+from+";"+to,function(data){
 			console.log("data: "+JSON.stringify(data));
-			
 			for (var g in data){
 				_appendRow(data[g]);
 			}
-			var positions = drawMarkers(data);
-			drawPath(positions);
-		
+			var _markers = drawMarkers(data);
+			
+			for(i=0;i<_markers.length;i++) {
+				 bounds.extend(_markers[i].position);
+			}
+
+			drawPath(_markers);
+			
+			map.fitBounds(bounds);
+			
+			markers = _markers;
+			
 		});
-		
-		
 	}
+	
+	function loadGpsLatest(){
+		$.getJSON( "/api/tracker/rest/gpslog?n=dateTime&o=latest",function(data){
+			console.log("latest position: "+JSON.stringify(data));
+			var marker = _appendMarker(data,"yellow");
+			
+			map.setCenter(marker.getPosition());
+			map.setZoom(16);
+			realtimeMarkers.push(marker);
+			_appendRow(data);
+			
+		});
+	}
+	
+	function _cleanLogsAndMarkers(){
+			// clean all markers
+			for (var m in markers){
+				markers[m].setMap(null);
+			}
+			
+			// clean pathes
+			logPath.setMap(null);
+			
+			// clean table
+			$('#gpslogTable tbody').empty();
+	}
+	
+	
+	
 	
 	function _appendRow(g){
 		var _row = "<tr>";
@@ -76,57 +176,52 @@ script.
 		$("#gpslogTable > tbody").append(_row);
 	}
 	
-	 $(function () {
-		$('#fromdate').datetimepicker({keepOpen:false});
-		$('#todate').datetimepicker({keepOpen:false});
-		$('#submitsearch').click(function(){
-			var _from = $('#from').val();
-			var _to = $('#to').val();
-			loadGpsLog(_from,_to);
+	
+	
+	function _createMarker(g){
+		var _position = new google.maps.LatLng(g.latitude, g.longitude);
+			var marker = new google.maps.Marker({
+				position: _position,
+				title: moment(g.dateTime).format("YYYY-MM-DD HH:mm:ss") +'eventID: '+g.eventID
 		});
-	});
-	
-	google.maps.event.addDomListener(window, 'load', initialize);
-	
-	function initialize() {
-		var mapOptions = {
-			center: { lng: 16.369861, lat: 48.187290},
-				zoom: 16
-		};
-		map = new google.maps.Map(document.getElementById('map-canvas'),mapOptions);
-		
-		var positions = drawMarkers();
-		
-		drawPath(positions);
-		
+		return marker;
 	}
 	
 	
-
+	// realtime marker
+	function _appendMarker(g,color){
+		console.log("_appendMarker called: "+JSON.stringify(g)+" color:"+color);
+		var marker = _createMarker(g);
+		marker.setIcon('http://maps.google.com/mapfiles/ms/micons/'+color+'.png')
+		marker.setMap(map);
+		return marker;
+	}
 	
 	function drawMarkers(log){
-		var _positions=[];
+		var _markers=[];
 		for (g in log){
 			var _g = log[g];
-			var _position = new google.maps.LatLng(_g.latitude, _g.longitude);
-			var marker = new google.maps.Marker({
-				position: _position,
-				title: moment(_g.dateTime).format("YYYY-MM-DD HH:mm:ss") +'eventID: '+_g.eventID
-			});
+			var marker = _createMarker(_g);
 			
 			if (g==0) marker.setIcon('http://maps.google.com/mapfiles/dd-end.png')
 			else if (g==log.length-1) marker.setIcon('http://maps.google.com/mapfiles/dd-start.png')
 			else marker.setIcon('http://maps.google.com/mapfiles/ms/micons/blue.png')
 			
 			marker.setMap(map)
-			_positions.push(_position);
+			_markers.push(marker);
 		}
-		return _positions;
+		return _markers;
 	}
 	
 	
-	function drawPath(coordinates){
-		var logPath = new google.maps.Polyline({
+	function drawPath(markers){
+		var coordinates=[];
+		
+		for (var m in markers){
+			coordinates.push(markers[m].position);
+		}
+		
+		logPath = new google.maps.Polyline({
 			path: coordinates,
 			geodesic: true,
 			strokeColor: 'lightblue',
