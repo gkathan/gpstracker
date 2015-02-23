@@ -45,21 +45,39 @@ function findAllByName(req, res , next){
 	var path = req.path.split("/");
 	var collection = _.last(path);
     var _filterName = req.query.n;
-	var _filterValue = req.query.v;
 	var _filterOperator = req.query.o;
-	var _filter = {};
+	var _filterParams = req.query.p;
 	
-	_filter[_filterName]={};
-	_filter[_filterName][_filterOperator]=_filterValue;
 	
-	if (_filterName==undefined) _filter = null;
+	var _f = {};
+	if (_filterName){
+		var _params = _filterParams.split(";");
+		var _from = new Date(_params[0]);
+		var _to = new Date(_params[1]);
+		
+		console.log("------------------- filtername: "+_filterName);
+		console.log("------------------- filterOperator: "+_filterOperator);
+		console.log("------------------- from: "+_from);
+		console.log("------------------- to: "+_to);
+		
+		if (_filterOperator=="range"){
+			// lets construct some query 
+			//  dateTime: {
+			// 			$gte: _from,
+			//			$lt: _to
+			// 	}
+			_f[_filterName]={};
+			_f[_filterName]["$gte"]=_from;
+			_f[_filterName]["$lt"]=_to;
+			
+			console.log("_f: "+JSON.stringify(_f));
+		}
+		
+		// e.g http://localhost:5005/api/tracker/rest/gpslog?n=dateTime&o=range&p=2015-01-01 09:10;2015-02-02 10:10
+		
+	}
 	
-	// e.g http://localhost:3000/api/kanbanv2/rest/boards?filterName=name&filterOperator=$eq&filterValue=studios
-	console.log("***** filter: "+JSON.stringify(_filter));
-	
-    db.collection(collection).find(_filter).sort({id : 1} , function(err , success){
-        //console.log("[DEBUG] findAllByName() for: "+_name+", Response success: "+JSON.stringify(success));
-        //console.log('Response error '+err);
+    db.collection(collection).find(_f).sort({dateTime : -1} , function(err , success){
         if(success){
             console.log("******************* success: "+success);
             
@@ -70,29 +88,6 @@ function findAllByName(req, res , next){
         }
     });
 }
-
-
-/**
- * find single object by Id
- */
-function findByInterval(req, res , next){
-    var path = req.path.split("/");
-	// format path: /kanbanv2/rest/boards/1
-	// take the last from the set with last stripped ;-)
-	var collection = _.last(_.initial(path));
-	
-    db.collection(collection).findOne({id:req.params.id} , function(err , success){
-        console.log('Response success '+success);
-        console.log('Response error '+err);
-        if(success){
-            res.send(success);
-            return;
-        }
-        return next(err);
-    })
-}
-
-
 
 
 
