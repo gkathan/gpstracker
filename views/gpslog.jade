@@ -46,15 +46,15 @@ block content
 script.
 	
 	 $(function () {
-		$('#fromdate').datetimepicker({keepOpen:false,format:"ddd, DD MMM YYYY, hh:mm:ss"});
-		$('#todate').datetimepicker({keepOpen:false,format:"ddd, DD MMM YYYY, hh:mm:ss"});
+		$('#fromdate').datetimepicker({keepOpen:false,format:"ddd, DD MMM YYYY, HH:mm:ss"});
+		$('#todate').datetimepicker({keepOpen:false,format:"ddd, DD MMM YYYY, HH:mm:ss"});
 		$('#submitsearch').click(function(){
 			var _from = $('#from').val();
 			var _to = $('#to').val();
 			loadGpsLog(_from,_to);
 		});
 		// default to date is now()
-		$('#to').val(moment(new Date()).format("ddd, DD MMM YYYY, hh:mm:ss"));
+		$('#to').val(moment(new Date()).format("ddd, DD MMM YYYY, HH:mm:ss"));
 		
 		$('#submitlatest').click(function(){
 			_cleanLogsAndMarkers()
