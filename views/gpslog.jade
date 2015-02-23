@@ -137,10 +137,14 @@ script.
 			console.log("latest position: "+JSON.stringify(data));
 			var marker = _appendMarker(data,"yellow");
 			
+			console.log("*marker: "+marker);
+			
+			marker.setMap(map);
 			map.setCenter(marker.getPosition());
 			map.setZoom(16);
 			realtimeMarkers.push(marker);
 			_appendRow(data);
+			
 			
 		});
 	}
@@ -151,8 +155,13 @@ script.
 				markers[m].setMap(null);
 			}
 			
+			for (var r in realtimeMarkers){
+				realtimeMarkers[r].setMap(null);
+			}
+			
+			
 			// clean pathes
-			logPath.setMap(null);
+			if (logPath) logPath.setMap(null);
 			
 			// clean table
 			$('#gpslogTable tbody').empty();
