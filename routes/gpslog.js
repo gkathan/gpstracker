@@ -21,6 +21,12 @@ router.get("/", function(req, res, next) {
 	res.locals.moment = require('moment');
 	res.locals.ip=config.serverIP;
 	res.locals.wsPort=config.wsPort;
+	res.locals.fenceRadius=config.fence.radius;
+	res.locals.fenceLat=config.fence.lat;
+	res.locals.fenceLng=config.fence.lng;
+	
+	
+
 	res.render('gpslog')
 	
 	return;

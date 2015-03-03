@@ -32,14 +32,21 @@
      
      "mailer" : {
 		"host": "localhost",
-		"port": 25,
-		"from" : "mailer@localhost"
-	
+		"port": "25",
+		"from" : "traccar@kathan.at",
+		
      },
      
      "notifications" : {
-		"portfolioupdate": "gerold.kathan@bwinparty.com"
+		"fenceOut": "gerold.kathan@gmail.com",
+		"fenceOutID":99
      
+     },
+     
+     "fence":{
+		"ID":"99",
+		"radius":500,
+		"lat":"48.188331",
+		"lng":"16.369196"
      }
-     
 }

@@ -61,6 +61,7 @@ exports.start = function(callback) {
 
 		if (_data.deviceID=="1000000001")
 		{
+			
 			console.log("[OK] got valid gps packet: "+JSON.stringify(_data));
 			console.log("...going to insert..."+connection_string);
 			db.collection("gpslog").insert(_data, function(err , success){
@@ -68,9 +69,31 @@ exports.start = function(callback) {
 				console.log('Response error '+err);
 			});
 			
+			if (_data.eventID==config.notifications.fenceOutID){
+				console.log("uuuuuuhh got a fenceOUT event: id="+JSON.stringify(_data));
+				_sendFenceOutNotification(config.notifications.fenceOut,_data);
+			}
+			
 			io.sockets.emit('gpslog',_data);
 		}
 	});
 	server.bind(PORT, HOST);
 }
 
+/**
+ * notifies when a we left our fence
+ */ 
+function _sendFenceOutNotification(to,gpslog){
+	var mailer = require('../services/MailService');
+
+	
+	var mail = {};
+	mail.to=to;
+	mail.subject="[hamburg left homebase] notification !!!";
+	mail.text="hej,\nhamburg left her homebase fence zone - hopefully this is not unintentionally ...\n see tracking info under http://traccar.kathan.at/gpslog \ncheerz";
+	//mail.html="<html><body><h1>this is the html version</h1><p>and some text</p></body></html>";
+
+	//testmail on startup
+	mailer.sendText(mail);
+	
+}

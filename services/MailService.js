@@ -10,13 +10,13 @@ var config = require('config');
 
 var signatureHtml="<style>html {position: relative;min-height: 100%;}body {background-color: #f9f9f9;font-family: RobotoDraft,  Helvetica, Arial;-webkit-user-select: none;-moz-user-select: none;-ms-user-select: none;user-select: none;-webkit-tap-highlight-color: rgba(0,0,0,0);-webkit-touch-callout: none; overflow: auto; argin-bottom: 20px;}</style>"
 
-var signatureText="\n________________________________\n:: this is an automatically generated mail - please do not reply to this email - in case of questions please contact gerold.kathan@bwinparty.com\n\n:: bpty   s t u d i o s | commercial management";
+var signatureText="\n________________________________\n:: this is an automatically generated mail - please do not reply to this email - in case of questions please contact gerold.kathan@gmail.com\n\n:: kathan.at d i g i t a l | stuff"; 
 var subjectPrefix = "";
 
 
 var server  = email.server.connect({
-//	user: config.mailer.auth.user,
-//	password: config.mailer.auth.pass,
+	user: config.mailer.auth.user,
+	password: config.mailer.auth.pass,
 	host: config.mailer.host,
 	port: config.mailer.port,
 	ssl:     false
