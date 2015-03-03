@@ -15,8 +15,8 @@ var subjectPrefix = "";
 
 
 var server  = email.server.connect({
-	user: config.mailer.auth.user,
-	password: config.mailer.auth.pass,
+//	user: config.mailer.auth.user,
+//	password: config.mailer.auth.pass,
 	host: config.mailer.host,
 	port: config.mailer.port,
 	ssl:     false
