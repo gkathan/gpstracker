@@ -33,7 +33,7 @@
      "mailer" : {
 		"host": "localhost",
 		"port": "25",
-		"from" : "traccar@kathan.at",
+		"from" : "traccar@kathan.at"
 		
      },
      
