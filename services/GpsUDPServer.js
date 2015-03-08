@@ -16,6 +16,8 @@ var app = express();
 var socketserver = app.listen(config.wsPort);
 var io = require('socket.io').listen(socketserver);
 
+var logservice = require('./GpsLogService');
+
 
 /**
  * start UDPServer
@@ -62,19 +64,26 @@ exports.start = function(callback) {
 		if (_data.deviceID=="1000000001")
 		{
 			
-			console.log("[OK] got valid gps packet: "+JSON.stringify(_data));
-			console.log("...going to insert..."+connection_string);
-			db.collection("gpslog").insert(_data, function(err , success){
-				console.log('Response success '+success);
-				console.log('Response error '+err);
+			// do a sanity check of the gps data
+			// sometime tk5000 sends wrong data which is 100's of kilometers away 
+			// let's filter those false positives out here ....
+			logservice.findLatest(function(err,_latest){
+				console.log("[CHECK] latest gpslog: "+JSON.stringify(_latest)); 
+			
+				console.log("[OK] got valid gps packet: "+JSON.stringify(_data));
+				console.log("...going to insert..."+connection_string);
+				db.collection("gpslog").insert(_data, function(err , success){
+					console.log('Response success '+success);
+					console.log('Response error '+err);
+				});
+				
+				if (_data.eventID==config.notifications.fenceOutID){
+					console.log("uuuuuuhh got a fenceOUT event: id="+JSON.stringify(_data));
+					_sendFenceOutNotification(config.notifications.fenceOut,_data);
+				}
+				
+				io.sockets.emit('gpslog',_data);
 			});
-			
-			if (_data.eventID==config.notifications.fenceOutID){
-				console.log("uuuuuuhh got a fenceOUT event: id="+JSON.stringify(_data));
-				_sendFenceOutNotification(config.notifications.fenceOut,_data);
-			}
-			
-			io.sockets.emit('gpslog',_data);
 		}
 	});
 	server.bind(PORT, HOST);

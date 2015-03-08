@@ -16,7 +16,7 @@ var db = mongojs(connection_string, [DB]);
  * find all GpsLogs
  */
 exports.findLog = function(callback) {
-	var gpslogs =  db.collection('gpslogs');
+	var gpslogs =  db.collection('gpslog');
 		gpslogs.find({}, function (err, docs){
 			//sort
 			var _e =_.sortBy(docs[0].gpslogs, "dateTime")
@@ -26,7 +26,7 @@ exports.findLog = function(callback) {
 }
 
 exports.findLogByRange = function(from,to,callback) {
-	var gpslogs =  db.collection('gpslogs');
+	var gpslogs =  db.collection('gpslog');
 		gpslogs.find({dateTime:{
 			 $gt:from,
 			 $lt:to
@@ -46,10 +46,8 @@ exports.findLogByRange = function(from,to,callback) {
  * get latest position
  */
 exports.findLatest = function(callback) {
-	var gpslogs =  db.collection('gpslogs');
-	gpslogs.find().sort({$natural:1}).limit(1, function(err , docs){
-			var _e =docs[0].gpslogs;
-			
+	db.collection('gpslog').findOne({}, {sort:{$natural:-1}}, function(err , _latest){
+			callback(_latest);
 			}
 	);
 	return;
