@@ -4,3 +4,4 @@ doc
 log
 node_modules
 .git
+secret.json

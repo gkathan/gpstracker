@@ -4,6 +4,8 @@
 
 var config = require('config');
 var mongojs = require("mongojs");
+ 
+
 
 var _ = require('lodash');
 
@@ -47,8 +49,10 @@ exports.findLogByRange = function(from,to,callback) {
  */
 exports.findLatest = function(callback) {
 	db.collection('gpslog').findOne({}, {sort:{$natural:-1}}, function(err , _latest){
-			callback(_latest);
+			console.log("_latest: "+JSON.stringify(_latest));
+			callback(err,_latest);
 			}
 	);
 	return;
 }
+

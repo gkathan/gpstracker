@@ -6,6 +6,7 @@ var config = require('config');
 var mongojs = require("mongojs");
 
 var _ = require('lodash');
+var geo = require('node-geo-distance');
 
 var DB="tracker";
 
@@ -69,20 +70,38 @@ exports.start = function(callback) {
 			// let's filter those false positives out here ....
 			logservice.findLatest(function(err,_latest){
 				console.log("[CHECK] latest gpslog: "+JSON.stringify(_latest)); 
-			
-				console.log("[OK] got valid gps packet: "+JSON.stringify(_data));
-				console.log("...going to insert..."+connection_string);
-				db.collection("gpslog").insert(_data, function(err , success){
-					console.log('Response success '+success);
-					console.log('Response error '+err);
-				});
 				
-				if (_data.eventID==config.notifications.fenceOutID){
-					console.log("uuuuuuhh got a fenceOUT event: id="+JSON.stringify(_data));
-					_sendFenceOutNotification(config.notifications.fenceOut,_data);
+				if (_latest != undefined){
+					var _c1={"latitude":parseFloat(_data.latitude),"longitude":parseFloat(_data.longitude)};
+					var _c2={"latitude":parseFloat(_latest.latitude),"longitude":parseFloat(_latest.longitude)};
+					
+					geo.vincenty(_c1, _c2, function(dist) {
+						console.log("[CHECK] **** distance between latest and this one: "+dist+ "m");
+						
+						_data.distance = dist;
+						
+						if (dist <config.filterLog.tresholdMeter){
+							console.log("[OK] got valid gps packet: "+JSON.stringify(_data));
+							console.log("...going to insert..."+connection_string);
+							db.collection("gpslog").insert(_data, function(err , success){
+								console.log('Response success '+success);
+								console.log('Response error '+err);
+							
+								if (_data.eventID==config.notifications.fenceOutID){
+									console.log("uuuuuuhh got a fenceOUT event: id="+JSON.stringify(_data));
+									_sendFenceOutNotification(config.notifications.fenceOut,_data);
+								}
+								
+								io.sockets.emit('gpslog',_data);
+							});
+								
+						}
+						else{
+							console.log("[ERROR] looks like we have a false packet - IGNORED !!!, distance between last and this: "+dist/1000+" km");
+						}
+					});
 				}
-				
-				io.sockets.emit('gpslog',_data);
+				else console.log("...[ERROR] no _latest found for _data: "+JSON.stringify(_data));
 			});
 		}
 	});

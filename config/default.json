@@ -48,5 +48,10 @@
 		"radius":500,
 		"lat":"48.188331",
 		"lng":"16.369196"
+     },
+     
+     "filterLog":{
+		//100km - if we "jump" from one log to another by this value => we assume its a false positive and not trackit
+		"tresholdMeter": 100000
      }
 }

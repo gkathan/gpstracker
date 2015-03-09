@@ -23,7 +23,8 @@ block content
 	
 	div.panel(style=" position: relative;padding: 20px 40px 40px;display: block;background-color:white;;width:700px;text-align: center;margin: 10px auto;")
 		.panel-heading
-			h3.panel-title GPSLOG
+			h3.panel-title GPSLOG 
+			span(id="distance")
 		.panel-body
 		
 		
@@ -32,12 +33,13 @@ block content
 			table.table.table-striped.table-hover.table-condensed(id="gpslogTable" style="font-size:10px")
 				thead
 					tr
-						th(style="width:130px") dateTime
-						th(style="width:70px") longitude
-						th(style="width:70px") latitude
-						th(style="width:70px") speed
-						th(style="width:70px") heading
-						th(style="width:70px") altitude
+						th(style="width:120px") dateTime
+						th(style="width:60px") longitude
+						th(style="width:60px") latitude
+						th(style="width:60px") speed
+						th(style="width:60px") heading
+						th(style="width:60px") altitude
+						th(style="width:60px") distance
 						th satellite
 						th eventID
 				tbody
@@ -51,7 +53,10 @@ script.
 		$('#submitsearch').click(function(){
 			var _from = $('#from').val();
 			var _to = $('#to').val();
-			loadGpsLog(_from,_to);
+			loadGpsLog(_from,_to,function(_distance){
+				$('#distance').html("distance: <b>"+_distance/1000+" km");
+			});
+			
 		});
 		// default to date is now()
 		$('#to').val(moment(new Date()).format("ddd, DD MMM YYYY, HH:mm:ss"));
@@ -129,13 +134,15 @@ script.
 
 
 	
-	function loadGpsLog(from,to){
+	function loadGpsLog(from,to,callback){
 		var bounds = new google.maps.LatLngBounds();
+		var _distance =0;
 		
 		$.getJSON( "/api/tracker/rest/gpslog?n=dateTime&o=range&p="+from+";"+to,function(data){
 			console.log("data: "+JSON.stringify(data));
 			for (var g in data){
 				_appendRow(data[g]);
+				 if (data[g].distance) _distance+=parseInt(data[g].distance);
 			}
 			var _markers = drawMarkers(data);
 			
@@ -145,10 +152,15 @@ script.
 
 			drawPath(_markers);
 			
+			//var _distance = _calculateDistance(data);
+			
+			console.log("[OVERALL DISTANCE]: "+_distance/1000+" km");
+			
 			map.fitBounds(bounds);
 			
 			markers = _markers;
 			
+			callback(_distance);
 		});
 	}
 	
@@ -198,6 +210,7 @@ script.
 		_row+="<td style='text-align:left;vertical-align:middle'>"+g.speed+" km/h</td>";
 		_row+="<td style='text-align:left;vertical-align:middle'>"+g.heading+"°</td>";
 		_row+="<td style='text-align:left;vertical-align:middle'>"+g.altitude+"m</td>";
+		_row+="<td style='text-align:left;vertical-align:middle'>"+Math.round(g.distance)+"m</td>";
 		_row+="<td style='text-align:left;vertical-align:middle'>"+g.satellite+" </td>";
 		_row+="<td style='text-align:left;vertical-align:middle'>"+g.eventID+" </td>";
 		_row+="</tr>";
@@ -211,7 +224,7 @@ script.
 		var _position = new google.maps.LatLng(g.latitude, g.longitude);
 			var marker = new google.maps.Marker({
 				position: _position,
-				title: moment(g.dateTime).format("YYYY-MM-DD HH:mm:ss") +'eventID: '+g.eventID
+				title: moment(g.dateTime).format("YYYY-MM-DD HH:mm:ss") +' \nspeed: '+g.speed+'\ndistance: '+g.distance+'\neventID: '+g.eventID
 		});
 		return marker;
 	}
@@ -226,12 +239,21 @@ script.
 		return marker;
 	}
 	
+	function _calculateDistance(log){
+		var _distance = 0;
+		for (g in log){
+			var _g = log[g];
+			 if (_g.distance) _distance+=parseInt(_g.distance);
+		}
+		return _distance;
+	}
+	
 	function drawMarkers(log){
 		var _markers=[];
+		
 		for (g in log){
 			var _g = log[g];
 			var marker = _createMarker(_g);
-			
 			if (g==0) marker.setIcon('http://maps.google.com/mapfiles/dd-end.png')
 			else if (g==log.length-1) marker.setIcon('http://maps.google.com/mapfiles/dd-start.png')
 			else marker.setIcon('http://maps.google.com/mapfiles/ms/micons/blue.png')

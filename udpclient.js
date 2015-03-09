@@ -1,7 +1,7 @@
 var dgram = require('dgram');
 var moment = require('moment');
 
-var message = new Buffer("1000000001,20150222131200,16.383961,48.183290,0,190,228,5,99");
+var message = new Buffer("1000000001,20150308131200,16.23961,48.183290,0,190,228,5,99");
 var client = dgram.createSocket("udp4");
 
 var port = 5032;
@@ -29,7 +29,7 @@ for (var i=0;i<100;i++){
 }
 */
 
-client.send(message, 0, message.length, 5032, "localhost", function(err) {
+client.send(message, 0, message.length, 5032, server, function(err) {
 client.close();
 
 });
