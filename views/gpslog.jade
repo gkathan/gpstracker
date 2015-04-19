@@ -2,7 +2,7 @@ include gpstracker_menu
 //script(src="/javascripts/gpstracker/gpslog_client.js")
 
 block content
-	div.panel(style=" position: relative;padding: 20px 40px 10px;display: block;background-color:white;;width:700px;text-align: center;margin: 10px auto;")
+	div.panel(style=" position: relative;padding: 20px 40px 10px;display: block;background-color:white;;width:500px;text-align: center;margin: 10px auto;")
 		div.form-group
 			div.input-group.date(id="fromdate" )
 				input.form-control(id="from" type="text" style="width:200px")
@@ -19,34 +19,28 @@ block content
 			button.btn.btn-primary.btn-xs(id="submitsearch" ) Search 
 			button.btn.btn-info.btn-xs(id="submitlatest" ) Latest Position
 
-	div(id="map-canvas" style="width:700px;margin:auto; height:300px")
+	div(id="map-canvas" style="width:500px;margin:auto; height:600px")
 	
-	div.panel(style=" position: relative;padding: 20px 40px 40px;display: block;background-color:white;;width:700px;text-align: center;margin: 10px auto;")
+	div.panel(style=" position: relative;display: block;background-color:white;;width:500px;text-align: center;margin: 10px auto;")
 		.panel-heading
 			h3.panel-title GPSLOG 
 			span(id="distance")
 		.panel-body
-		
-		
-			
-	
 			table.table.table-striped.table-hover.table-condensed(id="gpslogTable" style="font-size:10px")
 				thead
 					tr
-						th(style="width:120px") dateTime
+						th(style="width:110px") dateTime
 						th(style="width:60px") longitude
 						th(style="width:60px") latitude
-						th(style="width:60px") speed
-						th(style="width:60px") heading
-						th(style="width:60px") altitude
-						th(style="width:60px") distance
-						th satellite
-						th eventID
+						th(style="width:50px") speed
+						th(style="width:40px") head
+						th(style="width:40px") alt
+						th(style="width:50px") dist
+						th sat
+						th ID
 				tbody
-					
 
 script.
-	
 	 $(function () {
 		$('#fromdate').datetimepicker({keepOpen:false,format:"ddd, DD MMM YYYY, HH:mm:ss"});
 		$('#todate').datetimepicker({keepOpen:false,format:"ddd, DD MMM YYYY, HH:mm:ss"});
@@ -56,18 +50,14 @@ script.
 			loadGpsLog(_from,_to,function(_distance){
 				$('#distance').html("distance: <b>"+_distance/1000+" km");
 			});
-			
 		});
 		// default to date is now()
 		$('#to').val(moment(new Date()).format("ddd, DD MMM YYYY, HH:mm:ss"));
-		
 		$('#submitlatest').click(function(){
 			_cleanLogsAndMarkers()
 			loadGpsLatest();
-			
 		});
 	});
-
 
 	var markers;
 	
@@ -84,7 +74,6 @@ script.
 		loadGpsLatest();
 		
 		// draw homebase fence circle
-		
 		var homebase = new google.maps.LatLng("#{fenceLat}","#{fenceLng}")
 		
 		var options = {
@@ -99,9 +88,6 @@ script.
 		};
 		// Add the circle for this fence
 		var homeCircle = new google.maps.Circle(options);
-		
-		
-		
 	}
 	
 	// websocket handling
@@ -144,22 +130,18 @@ script.
 				_appendRow(data[g]);
 				 if (data[g].distance) _distance+=parseInt(data[g].distance);
 			}
-			var _markers = drawMarkers(data);
+			var _markers = drawMarkers(data,false);
 			
 			for(i=0;i<_markers.length;i++) {
 				 bounds.extend(_markers[i].position);
 			}
-
-			drawPath(_markers);
+			drawPath(_markers,'steelblue');
 			
 			//var _distance = _calculateDistance(data);
-			
 			console.log("[OVERALL DISTANCE]: "+_distance/1000+" km");
 			
 			map.fitBounds(bounds);
-			
 			markers = _markers;
-			
 			callback(_distance);
 		});
 	}
@@ -168,16 +150,12 @@ script.
 		$.getJSON( "/api/tracker/rest/gpslog?n=dateTime&o=latest",function(data){
 			console.log("latest position: "+JSON.stringify(data));
 			var marker = _appendMarker(data,"yellow");
-			
 			console.log("*marker: "+marker);
-			
 			marker.setMap(map);
 			map.setCenter(marker.getPosition());
 			map.setZoom(16);
 			realtimeMarkers.push(marker);
 			_appendRow(data);
-			
-			
 		});
 	}
 	
@@ -190,17 +168,12 @@ script.
 			for (var r in realtimeMarkers){
 				realtimeMarkers[r].setMap(null);
 			}
-			
-			
 			// clean pathes
 			if (logPath) logPath.setMap(null);
 			
 			// clean table
 			$('#gpslogTable tbody').empty();
 	}
-	
-	
-	
 	
 	function _appendRow(g){
 		var _row = "<tr>";
@@ -248,24 +221,32 @@ script.
 		return _distance;
 	}
 	
-	function drawMarkers(log){
+	function drawMarkers(log,markersEnabled){
 		var _markers=[];
 		
 		for (g in log){
 			var _g = log[g];
 			var marker = _createMarker(_g);
-			if (g==0) marker.setIcon('http://maps.google.com/mapfiles/dd-end.png')
-			else if (g==log.length-1) marker.setIcon('http://maps.google.com/mapfiles/dd-start.png')
-			else marker.setIcon('http://maps.google.com/mapfiles/ms/micons/blue.png')
 			
-			marker.setMap(map)
+				if (g==0){
+					marker.setIcon('http://maps.google.com/mapfiles/dd-end.png');
+					marker.setMap(map);
+				} 
+				else if (g==log.length-1){
+					marker.setIcon('http://maps.google.com/mapfiles/dd-start.png');
+					marker.setMap(map);
+				} 
+				else if (markersEnabled){
+				 	marker.setIcon('http://maps.google.com/mapfiles/ms/micons/blue.png')
+					marker.setMap(map);
+				}
 			_markers.push(marker);
 		}
 		return _markers;
 	}
 	
 	
-	function drawPath(markers){
+	function drawPath(markers,color){
 		var coordinates=[];
 		
 		for (var m in markers){
@@ -275,7 +256,7 @@ script.
 		logPath = new google.maps.Polyline({
 			path: coordinates,
 			geodesic: true,
-			strokeColor: 'lightblue',
+			strokeColor: color,
 			strokeOpacity: 0.8,
 			strokeWeight: 5
 			});
